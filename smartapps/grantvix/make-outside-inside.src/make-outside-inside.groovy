@@ -56,17 +56,21 @@ def initialize() {
 def matchWindow() {
     log.debug "Lux Level: ${light_sensor.currentIlluminance}"
     
-    def newLevel = light_sensor.currentIlluminance/800 * 100
+    def newLevel = (light_sensor.currentIlluminance/800 * 100).toInteger()
     if (newLevel > 100) {
     	newLevel = 100
     }
     
-    log.debug "New light level: ${newLevel.toInteger()}%"
+    log.debug "New light level: ${newLevel}%"
     
     light_switch.each { n -> 
-    						n.setLevel(newLevel.toInteger())
-                        	n.setHue(62)
-                        	n.setSaturation(16)
+                        	n.setLevel(newLevel)
+                            
+                            // If level is 0, will turn off the lights. Setting hue will cause the lights to come back on
+                            if (newLevel != 0) {
+                            	n.setHue(62)
+                        		n.setSaturation(16)
+                            }
                       }
 	// light_switch.each { n -> log.debug "Light Color: ${n.currentColor}" }
 }

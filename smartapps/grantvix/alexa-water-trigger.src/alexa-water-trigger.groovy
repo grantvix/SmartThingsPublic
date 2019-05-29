@@ -19,14 +19,14 @@ definition(
     author: "GRANT VIX",
     description: "Will toggle a switch when water detected from water sensors.",
     category: "My Apps",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+    iconUrl: "http://cdn.device-icons.smartthings.com/Weather/weather12-icn.png",
+    iconX2Url: "http://cdn.device-icons.smartthings.com/Weather/weather12-icn@2x.png",
+    iconX3Url: "http://cdn.device-icons.smartthings.com/Weather/weather12-icn@2x.png")
 
 
 preferences {
     section("Water Sensor") {
-        input "water_sensor", "capability.waterSensor", required: true, title: "What waster sensor?"
+        input "water_sensor", "capability.waterSensor", required: true, title: "Water sensors to monitor", multiple: true
     }
     section("Switch") {
         input "virtual_switch", "capability.switch", required: true, title: "What switch to trigger?"
@@ -49,8 +49,10 @@ def updated() {
 def initialize() {
 	log.debug "Initialized."
 
-    subscribe(water_sensor, "water.wet", waterWetHandler)
-    subscribe(water_sensor, "water.dry", waterDryHandler)
+	water_sensor.each { n ->
+							subscribe(n, "water.wet", waterWetHandler)
+    						subscribe(n, "water.dry", waterDryHandler)
+                      }
 }
 
 def waterWetHandler(evt) {
