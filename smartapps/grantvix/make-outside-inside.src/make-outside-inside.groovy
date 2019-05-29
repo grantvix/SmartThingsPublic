@@ -23,13 +23,15 @@ definition(
     iconX2Url: "http://cdn.device-icons.smartthings.com/Lighting/light21-icn@2x.png",
     iconX3Url: "http://cdn.device-icons.smartthings.com/Lighting/light21-icn@2x.png")
 
-
 preferences {
     section("Illuminance Measurement") {
         input "light_sensor", "capability.illuminanceMeasurement", required: true, title: "What is the illuminance sensor?"
     }
     section("Switch Level") {
         input "light_switch", "capability.switchLevel", required: true, title: "What lights to control?", multiple: true
+    }
+    section("Button") {
+    	input "button", "capability.button", required: true, title: "Button used to turn on and off."
     }
 }
 
@@ -49,8 +51,30 @@ def updated() {
 def initialize() {
 	log.debug "Initialized."
 
-	matchWindow()
-	runEvery1Minute(matchWindow)
+	state.active = false
+
+	subscribe(button, "button.pushed", buttonPressed)
+}
+
+def buttonPressed(evt) {
+	log.debug "Button: ${evt} ${state.active}"
+
+	state.active = !state.active
+
+	if (state.active == true) {
+    	log.debug "Setting outside to inside."
+        
+        matchWindow()
+		runEvery1Minute(matchWindow)
+    } else {
+    	log.debug "Reverting back to local control."
+    
+    	// Stop polling
+    	unsubscribe(matchWindow)
+        
+        // Set all lights to 100%
+        light_switch.each { n -> n.setLevel(100) }
+    }
 }
 
 def matchWindow() {
@@ -63,6 +87,7 @@ def matchWindow() {
     
     log.debug "New light level: ${newLevel}%"
     
+    // Set lights to daylight and match them to the light sensor
     light_switch.each { n -> 
                         	n.setLevel(newLevel)
                             
