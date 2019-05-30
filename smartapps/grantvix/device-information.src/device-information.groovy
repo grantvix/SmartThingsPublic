@@ -26,7 +26,7 @@ def selectCapability() {
 
 	return dynamicPage(pageProperties) {
 		section() {
-    		input "mycapability", "enum", title: "Which Capability?", metadata:[values:["alarm", "audioMute", "audioVolume", "audioNotification", "battery", "configuration", "contactSensor", "illuminanceMeasurement", "motionSensor", "musicPlayer", "polling", "presenceSensor", "relativeHumidityMeasurement", "sensor", "switch", "temperatureMeasurement", "thermostatMode", "threeAxisMeasurement", "waterSensor"]], required: true, multiple: false
+    		input "mycapability", "enum", title: "Which Capability?", metadata:[values:["alarm", "audioMute", "audioVolume", "audioNotification", "battery", "configuration", "contactSensor", "illuminanceMeasurement", "motionSensor", "musicPlayer", "polling", "presenceSensor", "relativeHumidityMeasurement", "sensor", "switch", "switchLevel", "temperatureMeasurement", "thermostatMode", "threeAxisMeasurement", "waterSensor"]], required: true, multiple: false
 		}
 	}
 }

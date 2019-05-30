@@ -43,14 +43,16 @@ def installed() {
 
 def updated() {
 	log.debug "Updated with settings: ${settings}"
-
-	unsubscribe()
+    
 	initialize()
 }
 
 def initialize() {
 	log.debug "Initialized."
 
+	// Reset state by unsubscribing to all event, unscheduling all tasks, and resetting state
+	unsubscribe()
+    unschedule()
 	state.active = false
 
 	subscribe(button, "button.pushed", buttonPressed)
@@ -62,18 +64,39 @@ def buttonPressed(evt) {
 	state.active = !state.active
 
 	if (state.active == true) {
-    	log.debug "Setting outside to inside."
+    	log.debug "Setting inside to outside."
+        
+        // Save current light settings
+        state.hue = light_switch[0].currentHue
+        state.saturation = light_switch[0].currentSaturation
+        state.level = light_switch[0].currentLevel
+        state.color = light_switch[0].currentColorTemperature
+        
+        log.debug "Saved Hue: ${state.hue}"
+        log.debug "Saved Saturation: ${state.saturation}"
+        log.debug "Saved Level: ${state.level}"
+        log.debug "Saved Color Temperature: ${state.color}"
         
         matchWindow()
 		runEvery1Minute(matchWindow)
     } else {
     	log.debug "Reverting back to local control."
+    	
+        log.debug "Hue: ${state.hue}"
+        log.debug "Saturation: ${state.saturation}"
+        log.debug "Level: ${state.level}"
+        log.debug "Color Temperature: ${state.color}"
     
     	// Stop polling
-    	unsubscribe(matchWindow)
+    	unschedule()
         
-        // Set all lights to 100%
-        light_switch.each { n -> n.setLevel(100) }
+        def savedColor = [hue: state.hue, saturation: state.saturation, level: state.level]
+        
+        // Set all lights to back to saved state
+        light_switch.each { n -> 
+                                n.setColor(savedColor)
+                                n.setColorTemperature(state.color)
+                          }
     }
 }
 
@@ -88,14 +111,9 @@ def matchWindow() {
     log.debug "New light level: ${newLevel}%"
     
     // Set lights to daylight and match them to the light sensor
+    def daylightColor = [hue: 62, saturation: 16, level: newLevel]
     light_switch.each { n -> 
-                        	n.setLevel(newLevel)
-                            
-                            // If level is 0, will turn off the lights. Setting hue will cause the lights to come back on
-                            if (newLevel != 0) {
-                            	n.setHue(62)
-                        		n.setSaturation(16)
-                            }
+                        	n.setColor(daylightColor)
+                            n.setColorTemperature(5000)
                       }
-	// light_switch.each { n -> log.debug "Light Color: ${n.currentColor}" }
 }
