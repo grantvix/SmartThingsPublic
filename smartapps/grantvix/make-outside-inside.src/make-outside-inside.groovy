@@ -70,11 +70,13 @@ def buttonPressed(evt) {
         state.hue = light_switch[0].currentHue
         state.saturation = light_switch[0].currentSaturation
         state.level = light_switch[0].currentLevel
+        state.hex = light_switch[0].currentColor
         state.color = light_switch[0].currentColorTemperature
         
         log.debug "Saved Hue: ${state.hue}"
         log.debug "Saved Saturation: ${state.saturation}"
         log.debug "Saved Level: ${state.level}"
+        log.debug "Saved Hex: ${state.hex}"
         log.debug "Saved Color Temperature: ${state.color}"
         
         matchWindow()
@@ -85,16 +87,19 @@ def buttonPressed(evt) {
         log.debug "Hue: ${state.hue}"
         log.debug "Saturation: ${state.saturation}"
         log.debug "Level: ${state.level}"
+        log.debug "Hex: ${state.hex}"
         log.debug "Color Temperature: ${state.color}"
     
     	// Stop polling
     	unschedule()
         
-        def savedColor = [hue: state.hue, saturation: state.saturation, level: state.level]
+        // def savedColor = [hue: state.hue, saturation: state.saturation, level: state.level, hex: state.hex]
+        def savedColor = [hue: state.hue, saturation: state.saturation, color: state.hex]
         
         // Set all lights to back to saved state
         light_switch.each { n -> 
                                 n.setColor(savedColor)
+                                n.setLevel(state.level)
                                 n.setColorTemperature(state.color)
                           }
     }
@@ -114,6 +119,6 @@ def matchWindow() {
     def daylightColor = [hue: 62, saturation: 16, level: newLevel]
     light_switch.each { n -> 
                         	n.setColor(daylightColor)
-                            n.setColorTemperature(5000)
+    	                    n.setColorTemperature(5000)
                       }
 }
