@@ -98,9 +98,12 @@ def buttonPressed(evt) {
         
         // Set all lights to back to saved state
         light_switch.each { n -> 
-                                n.setColor(savedColor)
+                                // Setting color will turn the lights back on
+                                if (state.level != 0) {
+                                	n.setColor(savedColor)
+                                	n.setColorTemperature(state.color)
+                                }
                                 n.setLevel(state.level)
-                                n.setColorTemperature(state.color)
                           }
     }
 }
@@ -116,9 +119,13 @@ def matchWindow() {
     log.debug "New light level: ${newLevel}%"
     
     // Set lights to daylight and match them to the light sensor
-    def daylightColor = [hue: 62, saturation: 16, level: newLevel]
+    def daylightColor = [hue: 62, saturation: 16]
     light_switch.each { n -> 
-                        	n.setColor(daylightColor)
-    	                    n.setColorTemperature(5000)
+                        	// Don't flash the lights by accident
+                            if (newLevel != 0) {
+                            	n.setColor(daylightColor)
+    	                    	n.setColorTemperature(5000)
+                            }
+                            n.setLevel(newLevel)
                       }
 }
