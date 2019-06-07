@@ -56,6 +56,11 @@ def initialize() {
 	state.active = false
 
 	subscribe(button, "button.pushed", buttonPressed)
+    subscribe(light_switch[0], "switch.off", switchedOff)
+}
+
+def switchedOff(evt) {
+	log.debug "Switch turned off."
 }
 
 def buttonPressed(evt) {
@@ -65,19 +70,6 @@ def buttonPressed(evt) {
 
 	if (state.active == true) {
     	log.debug "Setting inside to outside."
-        
-        // Save current light settings
-        state.hue = light_switch[0].currentHue
-        state.saturation = light_switch[0].currentSaturation
-        state.level = light_switch[0].currentLevel
-        state.hex = light_switch[0].currentColor
-        state.color = light_switch[0].currentColorTemperature
-        
-        log.debug "Saved Hue: ${state.hue}"
-        log.debug "Saved Saturation: ${state.saturation}"
-        log.debug "Saved Level: ${state.level}"
-        log.debug "Saved Hex: ${state.hex}"
-        log.debug "Saved Color Temperature: ${state.color}"
         
         matchWindow()
 		runEvery1Minute(matchWindow)
@@ -93,17 +85,16 @@ def buttonPressed(evt) {
     	// Stop polling
     	unschedule()
         
-        // def savedColor = [hue: state.hue, saturation: state.saturation, level: state.level, hex: state.hex]
-        def savedColor = [hue: state.hue, saturation: state.saturation, color: state.hex]
+        def _color = [hue: 62, saturation: 17]
         
         // Set all lights to back to saved state
         light_switch.each { n -> 
                                 // Setting color will turn the lights back on
                                 if (state.level != 0) {
-                                	n.setColor(savedColor)
-                                	n.setColorTemperature(state.color)
+                                	n.setColor(_color)
+                                    n.setColorTemperature(3003)
                                 }
-                                n.setLevel(state.level)
+                                n.setLevel(100)
                           }
     }
 }
@@ -114,6 +105,11 @@ def matchWindow() {
     def newLevel = (light_sensor.currentIlluminance/800 * 100).toInteger()
     if (newLevel > 100) {
     	newLevel = 100
+    }
+   
+   	// Turn off is someone turns off the lights or if the sensor hits 0
+    if (newLevel == 0) {
+    	state.active = true
     }
     
     log.debug "New light level: ${newLevel}%"
