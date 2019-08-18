@@ -63,6 +63,28 @@ def switchedOff(evt) {
 	log.debug "Switch turned off."
 }
 
+// SmartThings just fires at the lights and hopes it takes, so loop to make sure it worekd.
+def setLightColor(light, level, color, temperature) {
+    while (light.currentLevel != level || 
+    	   light.currentHue != color.hue || 
+           light.currentSaturation != color.saturation ||
+           light.currentColorTemperature != temperature) {
+           
+        // Don't flash the lights
+        if (level != 0) {
+        	light.setColor(color)
+            light.setColorTemperature(temperature)
+       	}
+        light.setLevel(level)
+ 
+ 		log.debug "Light: ${light}"
+       	log.debug "Level: ${level} currentLevel: ${light.currentLevel}"
+        log.debug "Hue: ${color.hue} currentHue: ${light.currentHue}"
+        log.debug "Saturation: ${color.saturation} currentSaturation: ${light.currentSaturation}"
+        log.debug "Temp: ${temperature} currentTemp: ${light.currentColorTemperature}"
+     }
+}
+
 def buttonPressed(evt) {
 	log.debug "Button: ${evt} ${state.active}"
 
@@ -87,15 +109,12 @@ def buttonPressed(evt) {
         
         def _color = [hue: 62, saturation: 17]
         
-        // Set all lights to back to saved state
-        light_switch.each { n -> 
-                                // Setting color will turn the lights back on
-                                if (state.level != 0) {
-                                	n.setColor(_color)
-                                    n.setColorTemperature(3003)
-                                }
-                                n.setLevel(100)
-                          }
+        // Set all lights to back to default
+		if (state.level != 0) {
+        	light_switch.setColor(_color)
+            light_switch.setColorTemperature(3003)
+        }
+        light_switch.setLevel(100)
     }
 }
 
@@ -116,12 +135,9 @@ def matchWindow() {
     
     // Set lights to daylight and match them to the light sensor
     def daylightColor = [hue: 62, saturation: 16]
-    light_switch.each { n -> 
-                        	// Don't flash the lights by accident
-                            if (newLevel != 0) {
-                            	n.setColor(daylightColor)
-    	                    	n.setColorTemperature(5000)
-                            }
-                            n.setLevel(newLevel)
-                      }
+    if (newLevel != 0) {
+    	light_switch.setColor(daylightColor)
+    	light_switch.setColorTemperature(5000)
+    }
+    light_switch.setLevel(newLevel)
 }
